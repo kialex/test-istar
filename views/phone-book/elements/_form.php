@@ -31,7 +31,17 @@ use yii\bootstrap\ActiveForm;
 
 ?>
 
-<?php $form = ActiveForm::begin(['id' => 'contact-form']); ?>
+<?php $this->registerJs("
+$(document).ready(function(){
+    $('#add-another-number').click(function(event) {
+        event.preventDefault();
+        console.log($('#phone-book-form').yiiActiveForm);
+        $('#phone-book-form').yiiActiveForm('remove', 'PhoneBook[first_name]');
+    });
+});
+"); ?>
+
+<?php $form = ActiveForm::begin(['id' => 'phone-book-form']); ?>
 
     <?= $form->field($phoneBook, 'first_name')->textInput([
         'autofocus' => true,
@@ -42,7 +52,15 @@ use yii\bootstrap\ActiveForm;
 
     <?= $form->field($phoneBook, 'patronymic')->textInput(['placeholder' => 'Enter your patronymic here...']); ?>
 
-    <?= $form->field($phoneBook, 'phone[]')->textInput(['placeholder' => 'Enter your last name here...']); ?>
+    <div class="phone-number-list">
+        <div class="phone-number-container">
+            <?= $form->field($phoneBook, 'phone[]')->textInput(['placeholder' => 'Enter your last name here...']); ?>
+        </div>
+    </div>
+
+    <div class="text-right">
+        <?= Html::a('Add another phone number', '#', ['id' => 'add-another-number']) ?>
+    </div>
 
     <div class="form-group">
         <?= Html::submitButton('Submit', ['class' => 'btn btn-primary', 'name' => 'contact-button']); ?>

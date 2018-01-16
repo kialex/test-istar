@@ -25,6 +25,7 @@
 namespace app\controllers;
 
 use app\models\PhoneBook;
+use app\models\PhoneBookSearch;
 use yii\base\InvalidConfigException;
 use yii\web\Controller;
 
@@ -59,9 +60,17 @@ class PhoneBookController extends Controller
         ];
     }
 
+    /**
+     * @return string
+     */
     public function actionIndex()
     {
-        return $this->render('index');
+        $filter = \Yii::createObject(PhoneBookSearch::className());
+        $dataProvider = $filter->search(\Yii::$app->request->getQueryParams());
+        return $this->render('index', [
+            'filter'        => $filter,
+            'dataProvider'  => $dataProvider,
+        ]);
     }
 
     /**

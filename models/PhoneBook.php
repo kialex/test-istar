@@ -36,7 +36,7 @@ use yii\db\ActiveRecord;
  * @property string $first_name
  * @property string $last_name
  * @property string $patronymic
- * @property string $phone
+ * @property string|array $phone
  *
  * @category   PhoneBook
  * @package    app\models
