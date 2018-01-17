@@ -1,33 +1,12 @@
 <?php
-/**
- * 2015-2018 Jaguar-Team
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@jaguar-team.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade JaguarTeam to newer
- * versions in the future. If you wish to customize JaguarTeam for your
- * needs please refer to http://www.jaguar-team.com for more information.
- *
- * @author    JaguarTeam LC <contact@jaguar-team.com>
- * @copyright 2015-2018 JaguarTeam LC
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- */
+
 namespace app\controllers;
 
+use yii\base\InvalidConfigException;
+use yii\filters\VerbFilter;
+use yii\web\Controller;
 use app\models\PhoneBook;
 use app\models\PhoneBookSearch;
-use yii\base\InvalidConfigException;
-use yii\web\Controller;
 
 /**
  * Class PhoneBookController
@@ -47,6 +26,24 @@ class PhoneBookController extends Controller
     /**
      * @inheritdoc
      */
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'index'             => ['GET'],
+                    'create'            => ['GET', 'POST',],
+                    'update'            => ['GET', 'POST', 'UPDATE',],
+                    'delete'            => ['POST', 'DELETE',],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function actions()
     {
         return [
@@ -61,7 +58,9 @@ class PhoneBookController extends Controller
     }
 
     /**
-     * @return string
+     * List of contacts.
+     *
+     * @return string render `phone-book/index` view.
      */
     public function actionIndex()
     {
@@ -74,9 +73,9 @@ class PhoneBookController extends Controller
     }
 
     /**
-     * @throws \Exception
-     * @throws \Throwable
-     * @throws \yii\base\InvalidConfigException
+     * Create contact.
+     *
+     * @return string render `phone-book/create` view.
      */
     public function actionCreate()
     {
@@ -85,7 +84,7 @@ class PhoneBookController extends Controller
         if ($phoneBook->load(\Yii::$app->request->post()) && $phoneBook->validate()) {
             if ($phoneBook->insert()) {
                 \Yii::$app->session->setFlash('success', 'New contact has been created.');
-                return $this->redirect('index');
+                return $this->redirect(['index']);
             } else {
                 \Yii::$app->session->setFlash('error', 'Error has occurred trying to add new contact.');
             }
@@ -95,11 +94,10 @@ class PhoneBookController extends Controller
     }
 
     /**
-     * @param $id
-     * @return string|\yii\web\Response
-     * @throws InvalidConfigException
-     * @throws \Exception
-     * @throws \Throwable
+     * Update contact.
+     *
+     * @param $id int contact `id` that will be updated.
+     * @return string render `phone-book/update` view or redirect to `index` action.
      */
     public function actionUpdate($id)
     {
@@ -107,7 +105,7 @@ class PhoneBookController extends Controller
         if ($phoneBook->load(\Yii::$app->request->post()) && $phoneBook->validate()) {
             if ($phoneBook->update()) {
                 \Yii::$app->session->setFlash('success', 'Contact with id "'.$id.'" has been updated.');
-                return $this->redirect('index');
+                return $this->redirect(['index']);
             } else {
                 \Yii::$app->session->setFlash('error', 'Error has occurred trying to update contact.');
             }
@@ -117,18 +115,17 @@ class PhoneBookController extends Controller
     }
 
     /**
-     * @param $id
-     * @return \yii\web\Response
-     * @throws InvalidConfigException
-     * @throws \Exception
-     * @throws \Throwable
+     * Delete contact.
+     *
+     * @param $id int contact `id` that will be updated.
+     * @return string redirect to `index` action.
      */
     public function actionDelete($id)
     {
         $phoneBook = $this->findModel($id);
         if ($phoneBook->delete()) {
             \Yii::$app->session->setFlash('success', 'Contact with id "'.$id.'" has been updated.');
-            return $this->redirect('index');
+            return $this->redirect(['index']);
         } else {
             \Yii::$app->session->setFlash('error', 'Error has occurred trying to delete contact.');
         }
@@ -137,8 +134,10 @@ class PhoneBookController extends Controller
     }
 
     /**
-     * @param $id
-     * @return PhoneBook
+     * Find [[PhoneBook]] model by `id`
+     *
+     * @param $id [[PhoneBook]] id that will be found.
+     * @return PhoneBook the model that was found
      * @throws InvalidConfigException if PhoneBook with getting id not found.
      */
     protected function findModel($id)

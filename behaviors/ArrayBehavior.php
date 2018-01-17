@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: User
- * Date: 010 10.08.17
- * Time: 16:46
- */
-
 namespace app\behaviors;
 
 use yii\base\Behavior;

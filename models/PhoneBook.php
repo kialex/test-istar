@@ -1,27 +1,5 @@
 <?php
-/**
- * 2015-2018 Jaguar-Team
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@jaguar-team.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade JaguarTeam to newer
- * versions in the future. If you wish to customize JaguarTeam for your
- * needs please refer to http://www.jaguar-team.com for more information.
- *
- * @author    JaguarTeam LC <contact@jaguar-team.com>
- * @copyright 2015-2018 JaguarTeam LC
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- */
+
 namespace app\models;
 
 use app\behaviors\ArrayBehavior;
@@ -31,7 +9,7 @@ use yii\db\ActiveRecord;
 /**
  * Class PhoneBook
  *
- * Class PhoneBook does not have anything yet
+ * Table `phone_book`;
  *
  * @property string $first_name
  * @property string $last_name
@@ -48,6 +26,9 @@ use yii\db\ActiveRecord;
  */
 class PhoneBook extends ActiveRecord
 {
+    /** Max phone number that user can add. */
+    const MAX_PHONE_NUMBER = 10;
+
     /**
      * @inheritdoc
      */
@@ -80,14 +61,57 @@ class PhoneBook extends ActiveRecord
             ['first_name', 'required'],
             ['first_name', 'trim'],
             ['first_name', 'string', 'min' => 1, 'max' => 255],
+            ['first_name', 'match', 'pattern' => '/^[A-z]{1,255}$/i', 'message' => 'Allowable characters: A-z'],
             // Last name rules
             ['last_name', 'trim'],
             ['last_name', 'string', 'min' => 1, 'max' => 255],
+            ['last_name', 'match', 'pattern' => '/^[A-z]{1,255}$/i', 'message' => 'Allowable characters: A-z'],
             // Patronymic rules
             ['patronymic', 'trim'],
             ['patronymic', 'string', 'min' => 1, 'max' => 255],
+            ['patronymic', 'match', 'pattern' => '/^[A-z]{1,255}$/i', 'message' => 'Allowable characters: A-z'],
             // Phone rules
-            ['phone', 'safe'],
+            ['phone', 'filterPhone'],
+            ['phone', 'validatePhone'],
         ];
+    }
+
+    /**
+     * Filter for [[phone]] attribute.
+     *
+     * Delete empty elements of array and duplicates.
+     *
+     * @param $attribute string name of phone numbers attribute.
+     */
+    public function filterPhone($attribute)
+    {
+        $phones = array_diff($this->phone, array(''));
+        $this->phone = empty($phones) ? null : array_unique($phones);
+    }
+
+    /**
+     * Checks whether [[phone]] is validate.
+     *
+     * Check the maximum number of phones. See [[MAX_PHONE_NUMBER]].
+     * Each elements of array will be checked via `preg_match`. Pattern: `/^[\+0-9\-\(\)\s]*$/`.
+     *
+     * @param $attribute string name of phone numbers attribute.
+     */
+    public function validatePhone($attribute)
+    {
+        if (!empty($this->phone)) {
+            $count = 1;
+            foreach ($this->phone as $number) {
+                if ($count > self::MAX_PHONE_NUMBER) {
+                    $this->addError($attribute, 'Max phone  numbers is '.self::MAX_PHONE_NUMBER);
+                    break;
+                }
+                if (!preg_match('/^[\+0-9\-\(\)\s]*$/', $number)) {
+                    $this->addError($attribute, 'Allow symbols: 0-9+-()');
+                    break;
+                }
+                $count++;
+            }
+        }
     }
 }
